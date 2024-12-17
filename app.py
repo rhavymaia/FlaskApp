@@ -1,11 +1,12 @@
 from flask import request, jsonify
+from marshmallow import ValidationError
 import sqlite3
 
 from helpers.application import app
 from helpers.database import getConnection
 from helpers.logging import logger
 
-from models.Propriedade import Propriedade
+from models.Propriedade import Propriedade, PropriedadeSchema
 
 
 @app.route("/")
@@ -44,27 +45,35 @@ def propriedades_get():
 
 @app.post("/propriedades")
 def propriedades_post():
-    # Captar o json da requisição e adicionar na lista.
-    propriedadeNova = request.json
 
-    # Manipulação do dados antiga.
-    # propriedadeNova['id'] = calcularProximoId()
-    # propriedades.append(propriedadeNova)
-    # 1 - Conectar.
-    connection = getConnection()
+    # Validação
+    schema = PropriedadeSchema()
 
-    # 2 - Obter cursor.
-    cursor = connection.cursor()
+    try:
+        # Captar o json da requisição e adicionar na lista.
+        data = request.json
+        propriedadeNova = schema.load(data)
 
-    # 3 - Executar.
-    cursor.execute(
-        "insert into tb_propriedades(nome, cidade) values (?, ?)", (propriedadeNova['nome'], propriedadeNova['cidade']))
+        # 1 - Conectar.
+        connection = getConnection()
 
-    # 3.1 - Confirmar - commit.
-    connection.commit()
+        # 2 - Obter cursor.
+        cursor = connection.cursor()
 
-    id = cursor.lastrowid
-    propriedadeNova['id'] = id
+        # 3 - Executar.
+        cursor.execute(
+            "insert into tb_propriedades(nome, cidade) values (?, ?)", (propriedadeNova['nome'], propriedadeNova['cidade']))
+
+        # 3.1 - Confirmar - commit.
+        connection.commit()
+
+        id = cursor.lastrowid
+        propriedadeNova['id'] = id
+
+    except ValidationError as err:
+        return jsonify({'error': err.messages}), 400
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
 
     return jsonify(propriedadeNova), 200
 

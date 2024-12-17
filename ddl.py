@@ -1,12 +1,20 @@
-import sqlite3
+import psycopg2
+from helpers.logging import logger
 
 
 def main(args=[]):
-    connection = sqlite3.connect('agricolaif.db')
+    logger.info("Conectando com o banco de dados.")
+    connection = psycopg2.connect(database="agriculaif",
+                                  user="postgres",
+                                  password="123456",
+                                  host="localhost",
+                                  port="5434")
 
-    with open('schema.sql') as f:
-        connection.executescript(f.read())
+    logger.info("Criando as tabelas.")
+    with connection.cursor() as cursor:
+        cursor.execute(open("schema.sql", "r").read())
 
+    logger.info("Finalizado com sucesso!")
     connection.close()
 
 

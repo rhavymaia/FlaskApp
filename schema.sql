@@ -1,5 +1,13 @@
 create table tb_propriedades (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nome TEXT NOT NULL,
+  id serial PRIMARY KEY,
+  nome varchar(50) NOT NULL,
   cidade TEXT NOT NULL
 );
+
+create table tb_cidades (
+  id serial PRIMARY KEY,
+  nome varchar(50) NOT NULL,
+  uf varchar(2) NOT NULL
+);
+
+COMMIT;
