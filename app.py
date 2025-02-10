@@ -1,13 +1,9 @@
-from flask import request, jsonify
-
 from helpers.application import app
-from resources.PropriedadeResource import propriedades_route
+from helpers.api import api
+from helpers.cors import cors
 
+cors.init_app(app)
+api.init_app(app)
 
-@app.route("/")
-def homeResource():
-    aplicacao = {'versao': '1.0'}
-    return jsonify(aplicacao), 200
-
-
-app.register_blueprint(propriedades_route)
+# requests
+# sqlalchemy

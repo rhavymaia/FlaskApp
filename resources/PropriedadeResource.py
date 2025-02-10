@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_restful import Resource
 from marshmallow import ValidationError
 from psycopg2 import Error as DatabaseError
 
@@ -11,32 +12,46 @@ propriedades_route = Blueprint(
     'propriedades', __name__, url_prefix='/propriedades')
 
 
+class PropriedadesResource(Resource):
+    def get(self):
+        try:
+            logger.info("Listando propriedades")
+            # 1 - Conectar.
+            connection = getConnection()
+            # 2 - Obter cursor.
+            cursor = connection.cursor()
+            # 3 - Executar.
+            cursor.execute(
+                "select * from tb_propriedades")
+            # 4 - retorna resultset
+            resultset = cursor.fetchall()
+            # Iterar e transformar dados.
+            propriedades = []
+            for item in resultset:
+                id = item[0]
+                nome = item[1]
+                cidade = item[2]
+                propriedade = Propriedade(id, nome, cidade)
+                logger.info(propriedade)
+                propriedades.append(propriedade.toJson())
+        except DatabaseError as e:
+            return {'error': str(e)}, 500
+
+        return propriedades, 200
+
+    def post(self):
+        pass
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass
+
+
 @propriedades_route.get("")
 def propriedades_get():
-    try:
-        logger.info("Listando propriedades")
-        # 1 - Conectar.
-        connection = getConnection()
-        # 2 - Obter cursor.
-        cursor = connection.cursor()
-        # 3 - Executar.
-        cursor.execute(
-            "select * from tb_propriedades")
-        # 4 - retorna resultset
-        resultset = cursor.fetchall()
-        # Iterar e transformar dados.
-        propriedades = []
-        for item in resultset:
-            id = item[0]
-            nome = item[1]
-            cidade = item[2]
-            propriedade = Propriedade(id, nome, cidade)
-            logger.info(propriedade)
-            propriedades.append(propriedade.toJson())
-    except DatabaseError as e:
-        return jsonify({'error': str(e)}), 500
-
-    return jsonify(propriedades), 200
+    pass
 
 
 @propriedades_route.post("")
@@ -59,7 +74,7 @@ def propriedades_post():
 
         # 3 - Executar.
         cursor.execute(
-            "insert into tb_propriedades(nome, cidade) values (?, ?)", (propriedadeNova['nome'], propriedadeNova['cidade']))
+            "insert into public.tb_propriedades(nome, cidade) values(%s, %s) returning id, nome, cidade", (propriedadeNova['nome'], propriedadeNova['cidade']))
 
         # 3.1 - Confirmar - commit.
         connection.commit()
@@ -67,14 +82,18 @@ def propriedades_post():
         # id = cursor.lastrowid
         # propriedadeNova['id'] = id
 
-        resultset = cursor.fecthone()
+        item = cursor.fetchone()
+        id = item[0]
+        nome = item[1]
+        cidade = item[2]
+        propriedade = Propriedade(id, nome, cidade)
 
     except ValidationError as err:
         return jsonify({'error': err.messages}), 400
     except DatabaseError as e:
         return jsonify({'error': str(e)}), 500
 
-    return jsonify(propriedadeNova), 200
+    return jsonify(propriedade.toJson()), 200
 
 
 def getPropriedadeById(idPropriedade):
