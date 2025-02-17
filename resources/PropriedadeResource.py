@@ -1,18 +1,26 @@
 from flask import Blueprint, jsonify, request
-from flask_restful import Resource
+from flask_restful import Resource, reqparse, marshal, marshal_with
 from marshmallow import ValidationError
 from psycopg2 import Error as DatabaseError
 
 from helpers.logging import logger
 from helpers.database import getConnection
 
-from models.Propriedade import Propriedade, PropriedadeSchema
+from models.Propriedade import Propriedade, PropriedadeSchema, propriedade_fields
 
 propriedades_route = Blueprint(
     'propriedades', __name__, url_prefix='/propriedades')
 
 
 class PropriedadesResource(Resource):
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('nome', required=True, type=str,
+                                 help='Nome da propriedade inválida.')
+        self.parser.add_argument('cidade', required=True, type=str,
+                                 help='Cidade da propriedade inválida.')
+
     def get(self):
         try:
             logger.info("Listando propriedades")
@@ -39,8 +47,14 @@ class PropriedadesResource(Resource):
 
         return propriedades, 200
 
+    @marshal_with(propriedade_fields)
     def post(self):
-        pass
+        args = self.parser.parse_args()
+        nome = args['nome']
+        cidade = args['cidade']
+
+        propriedade = Propriedade(nome, cidade)
+        return propriedade, 200
 
     def put(self):
         pass
