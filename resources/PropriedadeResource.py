@@ -4,12 +4,15 @@ from marshmallow import ValidationError
 from psycopg2 import Error as DatabaseError
 
 from helpers.logging import logger
-from helpers.database import getConnection
 
 from models.Propriedade import Propriedade, PropriedadeSchema, propriedade_fields
 
 propriedades_route = Blueprint(
     'propriedades', __name__, url_prefix='/propriedades')
+
+
+def getConnection():
+    pass
 
 
 class PropriedadesResource(Resource):
