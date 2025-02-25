@@ -23,9 +23,13 @@ class Propriedade(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(30))
-    posicao_id: Mapped[int] = mapped_column(ForeignKey("posicao.id"))
+    # posicao_id: Mapped[int] = mapped_column(ForeignKey("posicao.id"))
     endereco_id: Mapped[int] = mapped_column(ForeignKey("endereco.id"))
     proprietario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id"))
+
+    posicao: Mapped[List["Posicao"]] = relationship(
+        back_populates="posicao", cascade="all, delete-orphan"
+    )
 
     def __init__(self, nome, cidade) -> None:
         self.nome = nome
@@ -52,5 +56,10 @@ class Posicao(db.Model):
     latitude = db.Column(db.Float(8), nullable=False)
     longitude = db.Column(db.Float(8), nullable=False)
 
-    def __init__(self):
-        pass
+    proprieade_id: Mapped[int] = mapped_column(ForeignKey("pripriedade.id"))
+    propriedade: Mapped["Propriedade"] = relationship(
+        "Propriedade", uselist=False, back_populates="posicao")
+
+    def __init__(self, latitude, longitude):
+        self.latitude = latitude
+        self.longitude = longitude
