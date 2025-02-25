@@ -1,10 +1,9 @@
 from helpers.database import db
-from sqlalchemy.orm import Mapped, mapped_column
+from models.Endereco import Endereco
 
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey
-from sqlalchemy import String, Integer
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -27,25 +26,3 @@ class Usuario(db.Model):
 
     def __repr__(self) -> str:
         return f"Usuario(nome={self.nome}, sobrenome={self.sobrenome})"
-
-
-class Endereco(db.Model):
-    __tablename__ = "endereco"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    logradouro: Mapped[str] = mapped_column(String)
-    cep: Mapped[str] = mapped_column(String(8))
-    numero: Mapped[int] = mapped_column(Integer)
-    bairro: Mapped[str] = mapped_column(String)
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id"))
-
-    usuario: Mapped["Usuario"] = relationship(back_populates="endereco")
-
-    def __init__(self, logradouro, numero, bairro, usuario_id):
-        self.logradouro = logradouro
-        self.numero = numero
-        self.bairro = bairro
-        self.usuario_id = usuario_id
-
-    def __repr__(self) -> str:
-        return f"Address(logradouro={self.logradouro})"

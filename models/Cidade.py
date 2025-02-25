@@ -1,32 +1,35 @@
 from flask_restful import fields
+from sqlalchemy import ForeignKey
+from sqlalchemy import String, Integer, Float
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 from helpers.database import db
 
+
 cidade_fields = {
-    'codigo_ibge': fields.Integer,
+    'id': fields.Integer,
     'nome': fields.String,
     'latitude': fields.Float,
-    'longitude': fields.Float,
-    'capital': fields.Boolean,
-    'codigo_uf': fields.Integer,
-    'siafi_id': fields.String,
-    'ddd': fields.Integer,
-    'fuso_horario': fields.String,
+    'longitude': fields.Float
 }
 
 
 class Cidade(db.Model):
     __tablename__ = "cidade"
 
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    nome = db.Column(db.String(100), nullable=False)
-    latitude = db.Column(db.Float(8), nullable=True)
-    longitude = db.Column(db.Float(8), nullable=True)
+    id = mapped_column(Integer, primary_key=True, nullable=False)
+    nome = mapped_column(String(100), nullable=False)
+    latitude = mapped_column(Float(8), nullable=True)
+    longitude = mapped_column(Float(8), nullable=True)
 
-    endereco = db.relationship("Endereco", uselist=False, backref="cidade")
+    uf_id: Mapped[int] = mapped_column(ForeignKey("uf.id"))
+    uf = relationship("Uf", uselist=False)
 
-    def __init__(self, nome):
+    def __init__(self, nome, uf_id):
         self.nome = nome
+        self.uf_id = uf_id
 
     def __repr__(self):
         return f'<Cidade>'
