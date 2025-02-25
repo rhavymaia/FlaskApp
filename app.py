@@ -1,4 +1,4 @@
-from models.Usuario import User
+from models.Usuario import Usuario
 from helpers.application import app
 from helpers.api import api
 from helpers.cors import cors
@@ -12,7 +12,7 @@ cors.init_app(app)
 api.init_app(app)
 db.init_app(app)
 
-user = User()
+user = Usuario("José", "José da Silva")
 
 with app.app_context():
     db.create_all()
