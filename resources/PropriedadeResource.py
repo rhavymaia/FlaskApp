@@ -27,28 +27,10 @@ class PropriedadesResource(Resource):
     def get(self):
         try:
             logger.info("Listando propriedades")
-            # 1 - Conectar.
-            connection = getConnection()
-            # 2 - Obter cursor.
-            cursor = connection.cursor()
-            # 3 - Executar.
-            cursor.execute(
-                "select * from tb_propriedades")
-            # 4 - retorna resultset
-            resultset = cursor.fetchall()
-            # Iterar e transformar dados.
-            propriedades = []
-            for item in resultset:
-                id = item[0]
-                nome = item[1]
-                cidade = item[2]
-                propriedade = Propriedade(id, nome, cidade)
-                logger.info(propriedade)
-                propriedades.append(propriedade.toJson())
-        except DatabaseError as e:
+            propriedades = Propriedade.query.all()
+            return marshal(propriedades, propriedade_fields), 200
+        except Exception as e:
             return {'error': str(e)}, 500
-
-        return propriedades, 200
 
     @marshal_with(propriedade_fields)
     def post(self):
